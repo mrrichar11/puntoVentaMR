@@ -10,10 +10,12 @@ namespace PuntoDeVenta.Application.Services;
 public class InventarioService : IInventarioService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IBarcodeService _barcodeService;
 
-    public InventarioService(IUnitOfWork unitOfWork)
+    public InventarioService(IUnitOfWork unitOfWork, IBarcodeService barcodeService)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _barcodeService = barcodeService ?? throw new ArgumentNullException(nameof(barcodeService));
     }
 
     public async Task<Articulo> CrearArticuloConMatrizAsync(CrearArticuloDto dto, CancellationToken cancellationToken = default)
@@ -87,13 +89,17 @@ public class InventarioService : IInventarioService
                     }
                 }
 
-                if (stockInicial < 0) stockInicial = 0;
+                var totalCombinaciones = dto.Talles.Count * dto.Colores.Count;
+                var codigoBarrasVariante = !string.IsNullOrWhiteSpace(dto.CodigoBarrasUnico) && totalCombinaciones == 1
+                    ? dto.CodigoBarrasUnico.Trim()
+                    : _barcodeService.GenerarEan13Aleatorio();
 
                 var variante = new VarianteArticulo
                 {
                     Articulo = articulo,
                     ArticuloId = articulo.Id,
                     SKU = skuGenerado,
+                    CodigoBarras = codigoBarrasVariante,
                     Talle = talle,
                     Color = color,
                     PrecioCosto = dto.PrecioCosto,

@@ -22,6 +22,12 @@ public class CrearArticuloDto
     public int StockMinimo { get; set; } = 1;
 
     /// <summary>
+    /// Código de barras opcional (si el producto ya lo trae de fábrica).
+    /// Si no se especifica, el sistema generará automáticamente un código EAN-13 estándar para cada variante.
+    /// </summary>
+    public string? CodigoBarrasUnico { get; set; }
+
+    /// <summary>
     /// Lista de talles para la matriz (ej. ["S", "M", "L"] o ["38", "40", "42"] o ["41", "42", "43"]).
     /// </summary>
     public List<string> Talles { get; set; } = new();

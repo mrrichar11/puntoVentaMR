@@ -14,6 +14,7 @@ public partial class InventarioViewModel : ObservableObject
     private readonly IInventarioService _inventarioService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguracionService _configuracionService;
+    private readonly IBarcodeService _barcodeService;
 
     // --- Listado y Búsqueda de Variantes ---
     [ObservableProperty]
@@ -56,6 +57,12 @@ public partial class InventarioViewModel : ObservableObject
 
     [ObservableProperty]
     private string _nombreArticulo = string.Empty;
+
+    [ObservableProperty]
+    private string _codigoBarrasNuevo = string.Empty;
+
+    [ObservableProperty]
+    private string _codigoBarrasEscaneoRapido = string.Empty;
 
     [ObservableProperty]
     private string _temporada = "Todo el año";
@@ -176,14 +183,21 @@ public partial class InventarioViewModel : ObservableObject
     [ObservableProperty]
     private string _nuevaMarcaNombre = string.Empty;
 
+
+    private string _ultimaSugerenciaSku = string.Empty;
+    private decimal _descuentoEfectivoConfig = 10m;
+    private string _nombreComercioConfig = "MR. SYS";
+
     public InventarioViewModel(
         IInventarioService inventarioService,
         IUnitOfWork unitOfWork,
-        IConfiguracionService configuracionService)
+        IConfiguracionService configuracionService,
+        IBarcodeService barcodeService)
     {
         _inventarioService = inventarioService ?? throw new ArgumentNullException(nameof(inventarioService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _configuracionService = configuracionService ?? throw new ArgumentNullException(nameof(configuracionService));
+        _barcodeService = barcodeService ?? throw new ArgumentNullException(nameof(barcodeService));
     }
 
     public async Task CargarDatosAsync()
@@ -193,6 +207,8 @@ public partial class InventarioViewModel : ObservableObject
             var config = await _configuracionService.ObtenerConfiguracionAsync();
             MargenGananciaSugeridoConfig = config.MargenGananciaSugerido;
             CostosBancariosEstimadosConfig = config.CostosBancariosEstimados;
+            _nombreComercioConfig = !string.IsNullOrWhiteSpace(config.NombreComercio) ? config.NombreComercio : "MR. SYS";
+            _descuentoEfectivoConfig = config.PorcentajeDescuentoEfectivo;
             RecalcularPrecioSugerido();
 
             await RecargarMaestrosAsync();
@@ -202,6 +218,39 @@ public partial class InventarioViewModel : ObservableObject
         {
             MostrarMensaje($"Error al cargar inventario: {ex.Message}", true);
         }
+    }
+
+    partial void OnNombreArticuloChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(CodigoEstilo) || CodigoEstilo == _ultimaSugerenciaSku)
+        {
+            SugerirCodigoEstilo();
+        }
+    }
+
+    partial void OnCategoriaSeleccionadaChanged(Categoria? value)
+    {
+        if (CodigoEstilo == _ultimaSugerenciaSku && !string.IsNullOrWhiteSpace(NombreArticulo))
+        {
+            SugerirCodigoEstilo();
+        }
+    }
+
+    partial void OnMarcaSeleccionadaChanged(Marca? value)
+    {
+        if (CodigoEstilo == _ultimaSugerenciaSku && !string.IsNullOrWhiteSpace(NombreArticulo))
+        {
+            SugerirCodigoEstilo();
+        }
+    }
+
+    [RelayCommand]
+    public void SugerirCodigoEstilo()
+    {
+        if (string.IsNullOrWhiteSpace(NombreArticulo)) return;
+        var sugerencia = _barcodeService.SugerirSku(NombreArticulo, CategoriaSeleccionada?.Nombre, MarcaSeleccionada?.Nombre);
+        _ultimaSugerenciaSku = sugerencia;
+        CodigoEstilo = sugerencia;
     }
 
     partial void OnPrecioCostoChanged(decimal value)
@@ -620,7 +669,8 @@ public partial class InventarioViewModel : ObservableObject
                 StockMinimo = StockMinimo,
                 Talles = listaTalles,
                 Colores = listaColores,
-                StockInicialDefecto = StockInicialDefecto
+                StockInicialDefecto = StockInicialDefecto,
+                CodigoBarrasUnico = string.IsNullOrWhiteSpace(CodigoBarrasNuevo) ? null : CodigoBarrasNuevo.Trim()
             };
 
             var nuevoArticulo = await _inventarioService.CrearArticuloConMatrizAsync(dto);
@@ -630,6 +680,7 @@ public partial class InventarioViewModel : ObservableObject
 
             CodigoEstilo = string.Empty;
             NombreArticulo = string.Empty;
+            CodigoBarrasNuevo = string.Empty;
             PrecioOferta = null;
 
             await RecargarMaestrosAsync();
@@ -638,6 +689,64 @@ public partial class InventarioViewModel : ObservableObject
         catch (Exception ex)
         {
             MostrarMensaje($"Error al crear artículo: {ex.Message}", true);
+        }
+    }
+
+    [RelayCommand]
+    public async Task BuscarPorCodigoBarrasAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CodigoBarrasEscaneoRapido)) return;
+
+        var codigo = CodigoBarrasEscaneoRapido.Trim();
+        try
+        {
+            var encontrada = await _inventarioService.ObtenerVariantePorCodigoBarrasOSkuAsync(codigo);
+            if (encontrada != null)
+            {
+                VarianteSeleccionada = Variantes.FirstOrDefault(v => v.Id == encontrada.Id) ?? encontrada;
+                MostrarMensaje($"¡Producto localizado! {encontrada.NombreArticulo} - Talle: {encontrada.Talle} / Color: {encontrada.Color} (Stock: {encontrada.StockActual})", false);
+            }
+            else
+            {
+                CodigoBarrasNuevo = codigo;
+                MostrarMensaje($"Código '{codigo}' no encontrado. Se precargó en el formulario para crear un nuevo producto con este código de barras de fábrica.", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarMensaje($"Error al buscar por código de barras: {ex.Message}", true);
+        }
+        finally
+        {
+            CodigoBarrasEscaneoRapido = string.Empty;
+        }
+    }
+
+    [RelayCommand]
+    public void ImprimirEtiquetas(VarianteArticuloDto? variante = null)
+    {
+        var item = variante ?? VarianteSeleccionada;
+        if (item == null)
+        {
+            MostrarMensaje("Seleccione una variante de la grilla para imprimir sus etiquetas.", true);
+            return;
+        }
+
+        try
+        {
+            var dlg = new Views.Inventario.ImprimirEtiquetasDialog(
+                item,
+                _nombreComercioConfig,
+                _descuentoEfectivoConfig,
+                _barcodeService)
+            {
+                Owner = System.Windows.Application.Current.MainWindow
+            };
+            dlg.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MostrarMensaje($"Error al abrir diálogo de etiquetas: {ex.Message}", true);
         }
     }
 

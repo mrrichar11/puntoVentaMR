@@ -8,6 +8,7 @@ using PuntoDeVenta.Domain.Entities.Inventario;
 using PuntoDeVenta.Domain.Exceptions;
 using PuntoDeVenta.Infrastructure.Data;
 using PuntoDeVenta.Infrastructure.Repositories;
+using PuntoDeVenta.Infrastructure.Services;
 using Xunit;
 
 namespace PuntoDeVenta.UnitTests;
@@ -35,7 +36,7 @@ public class InventarioServiceTests : IDisposable
         _context.Database.EnsureCreated();
 
         _unitOfWork = new UnitOfWork(_context);
-        _inventarioService = new InventarioService(_unitOfWork);
+        _inventarioService = new InventarioService(_unitOfWork, new BarcodeService());
 
         // Seeding de categoría y marca
         _categoriaPrueba = new Categoria { Nombre = "Remeras", Descripcion = "Remeras de algodón" };

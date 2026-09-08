@@ -33,7 +33,7 @@ public class AsistenteCargaServiceTests : IDisposable
         _context.Database.EnsureCreated();
 
         _unitOfWork = new UnitOfWork(_context);
-        _inventarioService = new InventarioService(_unitOfWork);
+        _inventarioService = new InventarioService(_unitOfWork, new BarcodeService());
         _configuracionService = new ConfiguracionService(_unitOfWork);
         _asistenteService = new AsistenteCargaService(_inventarioService, _unitOfWork, _configuracionService);
     }

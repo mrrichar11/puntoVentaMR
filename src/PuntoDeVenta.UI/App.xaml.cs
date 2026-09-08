@@ -56,6 +56,7 @@ public partial class App : System.Windows.Application
                 services.AddScoped<IGeminiService, GeminiService>();
                 services.AddScoped<IAsistenteCargaService, AsistenteCargaService>();
                 services.AddScoped<IUpdateService, GitHubUpdateService>();
+                services.AddSingleton<IBarcodeService, BarcodeService>();
 
                 // 4. ViewModels
                 services.AddSingleton<MainViewModel>();

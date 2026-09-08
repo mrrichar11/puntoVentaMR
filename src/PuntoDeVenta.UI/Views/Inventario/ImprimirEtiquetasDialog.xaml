@@ -1,0 +1,132 @@
+<Window x:Class="PuntoDeVenta.UI.Views.Inventario.ImprimirEtiquetasDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Imprimir Etiquetas de Código de Barras"
+        Height="540" Width="680"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Background="{DynamicResource ApplicationBackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="🏷️" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock Text="Impresión de Etiquetas para Mercadería" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Genera códigos de barras térmicos listos para adherir a prendas, cajas y calzados."
+                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <!-- CUERPO PRINCIPAL (2 COLUMNAS: PARÁMETROS Y VISTA PREVIA) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN -->
+            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                <ui:Card Padding="14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Impresora Térmica:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4" />
+                        <ComboBox x:Name="CmbImpresoras" Margin="0,0,0,12" SelectionChanged="CmbImpresoras_SelectionChanged" />
+
+                        <TextBlock Text="Cantidad de Etiquetas:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4" />
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtCantidad" Grid.Column="0" Text="1" TextAlignment="Center" FontSize="14" FontWeight="Bold" Margin="0,0,6,0" TextChanged="TxtCantidad_TextChanged" />
+                            <Button Grid.Column="1" Content="-1" Padding="8,4" Margin="0,0,4,0" Click="BtnMenosCopias_Click" />
+                            <Button Grid.Column="2" Content="+1" Padding="8,4" Click="BtnMasCopias_Click" />
+                        </Grid>
+
+                        <TextBlock Text="Tamaño de Etiqueta:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4" />
+                        <ComboBox x:Name="CmbTamano" SelectedIndex="0" Margin="0,0,0,12" SelectionChanged="CmbTamano_SelectionChanged">
+                            <ComboBoxItem Content="50 mm × 30 mm (Estándar Ropa / Calzado)" />
+                            <ComboBoxItem Content="40 mm × 25 mm (Pequeña / Accesorios)" />
+                            <ComboBoxItem Content="Rollo 58 mm continuo" />
+                        </ComboBox>
+
+                        <CheckBox x:Name="ChkMostrarPrecioEfectivo" Content="Mostrar precio en efectivo con dto." IsChecked="True" Checked="ChkMostrarPrecio_Changed" Unchecked="ChkMostrarPrecio_Changed" />
+                    </StackPanel>
+                </ui:Card>
+
+                <TextBlock Text="* Compatible con etiquetadoras Zebra, Xprinter, Brother, Dymo y térmicas USB estándar."
+                           FontSize="11" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- COLUMNA DERECHA: VISTA PREVIA DE LA ETIQUETA ADHESIVA -->
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Vista Previa de la Etiqueta:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8" />
+
+                <Border Background="#F1F5F9" CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <!-- TARJETA SIMULADORA DE ETIQUETA FÍSICA -->
+                    <Border x:Name="BorderEtiquetaVisual"
+                            Width="260" MinHeight="160"
+                            Background="White"
+                            BorderBrush="#94A3B8"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12,10"
+                            SnapsToDevicePixels="True"
+                            UseLayoutRounding="True">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="2" Direction="270" Opacity="0.15" Color="Black" />
+                        </Border.Effect>
+
+                        <StackPanel HorizontalAlignment="Center">
+                            <!-- NOMBRE DEL COMERCIO -->
+                            <TextBlock x:Name="TxtEtiquetaComercio" Text="MR. SYS" FontSize="11" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,4" />
+
+                            <!-- NOMBRE DEL PRODUCTO -->
+                            <TextBlock x:Name="TxtEtiquetaProducto" Text="Jean Mom Celeste Rígido" FontSize="12" FontWeight="SemiBold" Foreground="#0F172A" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,4" />
+
+                            <!-- TALLE Y COLOR -->
+                            <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                <TextBlock x:Name="TxtEtiquetaVariante" Text="TALLE: 40  |  COLOR: CELESTE" FontSize="10" FontWeight="Bold" Foreground="#334155" />
+                            </Border>
+
+                            <!-- PRECIO -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                <TextBlock x:Name="TxtEtiquetaPrecioLista" Text="$35.000" FontSize="14" FontWeight="ExtraBold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtEtiquetaPrecioEfectivo" Text=" (Efvo: $31.500)" FontSize="10" FontWeight="Bold" Foreground="#16A34A" VerticalAlignment="Center" Margin="4,0,0,0" />
+                            </StackPanel>
+
+                            <!-- IMAGEN DEL CÓDIGO DE BARRAS -->
+                            <Image x:Name="ImgCodigoBarras" Height="50" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor" SnapsToDevicePixels="True" Margin="0,0,0,2" />
+
+                            <!-- NÚMEROS LEGIBLES POR HUMANOS DEL CÓDIGO -->
+                            <TextBlock x:Name="TxtEtiquetaCodigoNumerico" Text="2026090800014" FontSize="10" FontFamily="Consolas, Segoe UI" FontWeight="SemiBold" Foreground="#0F172A" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <Border Grid.Row="2" Margin="0,16,0,0" Padding="0,12,0,0" BorderBrush="{DynamicResource SubtleFillColorSecondaryBrush}" BorderThickness="0,1,0,0">
+            <Grid>
+                <TextBlock x:Name="TxtEstadoImpresion" Text="" FontSize="12" Foreground="#107C41" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Cerrar" Padding="16,8" Margin="0,0,10,0" Click="BtnCancelar_Click" />
+                    <ui:Button x:Name="BtnImprimir" Content="🖨️ Imprimir Etiquetas" Appearance="Primary" Padding="20,8" FontWeight="Bold" Click="BtnImprimir_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
