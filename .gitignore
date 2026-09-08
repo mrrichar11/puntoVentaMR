@@ -1,0 +1,41 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+publish/
+publish_generador/
+*.publishsettings
+tools/GeneradorLicencias_Bin/
+*.exe
+*.dll
+*.pdb
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+
+## Database & Local Data (CRITICAL: Never commit business data)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+Backups/
+Tickets/
+Logos/
+
+## Credentials and API Keys (CRITICAL: Never commit API keys)
+gemini_key.txt
+*.key
+*.pem
+appsettings*.Development.json
+
+## Logs & Temp
+*.log
+*.tmp

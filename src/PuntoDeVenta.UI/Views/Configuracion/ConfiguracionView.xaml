@@ -1,0 +1,959 @@
+<UserControl x:Class="PuntoDeVenta.UI.Views.Configuracion.ConfiguracionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:PuntoDeVenta.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="1050">
+
+    <UserControl.Resources>
+        <converters:CurrencyConverter x:Key="CurrencyConverter" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- BANNER DE ESTADO -->
+        <Border Grid.Row="0" Margin="0,0,0,12" Padding="14,10" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Mensaje}" FontSize="13" FontWeight="Medium" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding EsMensajeError}" Value="True">
+                                    <Setter Property="Foreground" Value="#D13438" />
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding EsMensajeError}" Value="False">
+                                    <Setter Property="Foreground" Value="#107C41" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Column="1" Text="Configuración General y Políticas del Comercio" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <!-- CONTENIDO PRINCIPAL EN PESTAÑAS -->
+        <TabControl Grid.Row="1">
+
+            <!-- PESTAÑA 1: DATOS DEL COMERCIO Y VENDEDORAS -->
+            <TabItem Header="Datos del Comercio">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="750" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Información de la Tienda" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+                                    <TextBlock Text="Nombre Comercial de la Tienda / Zapatería:" FontSize="12" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding NombreComercio, UpdateSourceTrigger=LostFocus}" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" />
+
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <TextBlock Text="Dirección / Local:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding Direccion, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                            <TextBlock Text="Teléfono / WhatsApp de Contacto:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding Telefono, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <TextBlock Text="CUIT / Identificación Fiscal:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding Cuit, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                            <TextBlock Text="Vendedora / Cajera por Defecto:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding VendedoraDefecto, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- LOGO DEL COMERCIO -->
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Identidad Visual y Logo del Negocio" FontSize="16" FontWeight="Bold" Margin="0,0,0,4" />
+                                    <TextBlock Text="El logo seleccionado se exhibirá en la pantalla de inicio de sesión (Login) y en la barra lateral del sistema."
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               Margin="0,0,0,12" />
+
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Vista previa del logo -->
+                                        <Border Grid.Column="0"
+                                                Width="160" Height="100"
+                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Margin="0,0,16,0">
+                                            <Grid>
+                                                <!-- Sin Logo -->
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                            Visibility="{Binding TieneLogo, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                                    <ui:SymbolIcon Symbol="Image24" FontSize="32" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                                    <TextBlock Text="Sin Logo" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- Con Logo -->
+                                                <Image Source="{Binding LogoRuta}"
+                                                       Stretch="Uniform"
+                                                       Margin="8"
+                                                       Visibility="{Binding TieneLogo, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Acciones de carga -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                <ui:Button Content="Subir / Cambiar Logo..."
+                                                           Appearance="Secondary"
+                                                           Icon="{ui:SymbolIcon Symbol=FolderOpen24}"
+                                                           Command="{Binding SeleccionarLogoCommand}"
+                                                           Margin="0,0,8,0" />
+                                                <ui:Button Content="Quitar Logo"
+                                                           Appearance="Danger"
+                                                           Icon="{ui:SymbolIcon Symbol=Delete24}"
+                                                           Command="{Binding QuitarLogoCommand}"
+                                                           IsEnabled="{Binding TieneLogo}" />
+                                            </StackPanel>
+                                            <TextBlock Text="Formatos soportados: PNG, JPG, JPEG, WEBP. Se recomienda imagen apaisada o cuadrada sobre fondo transparente o claro."
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Button Content="GUARDAR DATOS DEL COMERCIO"
+                                       Appearance="Primary"
+                                       Icon="{ui:SymbolIcon Symbol=Save24}"
+                                       Height="40"
+                                       Command="{Binding GuardarConfiguracionCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 2: POLÍTICAS FINANCIERAS, COMISIONES Y TOPES -->
+            <TabItem Header="Finanzas &amp; Políticas Comerciales">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="750" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Descuentos y Retenciones de Medios de Pago" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <TextBlock Text="% Descuento Pago Efectivo Mostrador:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding PorcentajeDescuentoEfectivo, UpdateSourceTrigger=LostFocus}" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                            <TextBlock Text="% Retención / Comisión Tarjeta Débito:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding ComisionTarjetaDebito, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <TextBlock Text="% Retención / Comisión Tarjeta Crédito (1 Pago):" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding ComisionTarjetaCredito, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                            <TextBlock Text="Límite Crédito / Fiado a Clientas Nuevas ($):" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding TopeFiadoDefecto, UpdateSourceTrigger=LostFocus}" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- PLANES DE FINANCIACIÓN EN CUOTAS (3, 6, 9 Y 12 CUOTAS) -->
+                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="14" CornerRadius="8" Margin="0,4,0,14">
+                                        <StackPanel>
+                                            <TextBlock Text="Financiación en Cuotas con Tarjeta de Crédito (3, 6, 9 y 12 cuotas)" FontSize="14" FontWeight="Bold" Margin="0,0,0,4" />
+                                            <TextBlock Text="Configure los planes de cuotas habilitados para el Punto de Venta y sus recargos financieros."
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       FontSize="12"
+                                                       Margin="0,0,0,12" />
+
+                                            <!-- SWITCH / CHECKBOX PRECIO DE LISTA INCLUYE CUOTAS -->
+                                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                                <StackPanel>
+                                                    <CheckBox IsChecked="{Binding CuotasIncluidasEnPrecioLista}" FontWeight="SemiBold" FontSize="13">
+                                                        <TextBlock Text="El recargo de cuotas ya está incluido en el Precio de Lista (Cuotas sin interés)" TextWrapping="Wrap" />
+                                                    </CheckBox>
+                                                    <TextBlock Text="• Activado: El cliente abona el Precio de Lista dividido en las cuotas seleccionadas (0% de recargo adicional al cobrar).&#x0a;• Desactivado: El sistema calcula y exhibe un tercer precio (Precio Financiado en Cuotas) sumando el porcentaje de recargo fijado para cada plan."
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               FontSize="11"
+                                                               TextWrapping="Wrap"
+                                                               Margin="24,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- GRILLA DE 4 PLANES: 3, 6, 9, 12 CUOTAS -->
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <!-- 3 Cuotas -->
+                                                <Border Grid.Row="0" Grid.Column="0" Margin="0,0,6,10" Padding="10" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <CheckBox IsChecked="{Binding Habilitar3Cuotas}" Content="Habilitar 3 Cuotas" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                        <TextBlock Text="% Recargo Financiación (3 cuotas):" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,2" />
+                                                        <ui:TextBox Text="{Binding Recargo3Cuotas, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding Habilitar3Cuotas}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- 6 Cuotas -->
+                                                <Border Grid.Row="0" Grid.Column="1" Margin="6,0,0,10" Padding="10" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <CheckBox IsChecked="{Binding Habilitar6Cuotas}" Content="Habilitar 6 Cuotas" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                        <TextBlock Text="% Recargo Financiación (6 cuotas):" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,2" />
+                                                        <ui:TextBox Text="{Binding Recargo6Cuotas, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding Habilitar6Cuotas}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- 9 Cuotas -->
+                                                <Border Grid.Row="1" Grid.Column="0" Margin="0,0,6,0" Padding="10" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <CheckBox IsChecked="{Binding Habilitar9Cuotas}" Content="Habilitar 9 Cuotas" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                        <TextBlock Text="% Recargo Financiación (9 cuotas):" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,2" />
+                                                        <ui:TextBox Text="{Binding Recargo9Cuotas, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding Habilitar9Cuotas}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- 12 Cuotas -->
+                                                <Border Grid.Row="1" Grid.Column="1" Margin="6,0,0,0" Padding="10" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <CheckBox IsChecked="{Binding Habilitar12Cuotas}" Content="Habilitar 12 Cuotas" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                        <TextBlock Text="% Recargo Financiación (12 cuotas):" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,2" />
+                                                        <ui:TextBox Text="{Binding Recargo12Cuotas, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding Habilitar12Cuotas}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- MARGEN DE GANANCIA Y COSTOS BANCARIOS -->
+                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="12" CornerRadius="6" Margin="0,4,0,4">
+                                        <StackPanel>
+                                            <TextBlock Text="Cálculo Automático de Precios Sugeridos" FontWeight="Bold" FontSize="13" Margin="0,0,0,4" />
+                                            <TextBlock Text="Al ingresar el precio de costo al cargar o editar productos, el sistema calculará un precio de venta sugerido basado en tu margen de ganancia objetivo más los costos bancarios/financieros."
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,8" />
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                                    <TextBlock Text="% Margen Ganancia Objetivo (ej. 80):" FontSize="12" Margin="0,0,0,4" />
+                                                    <ui:TextBox Text="{Binding MargenGananciaSugerido, UpdateSourceTrigger=LostFocus}" FontWeight="SemiBold" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                                    <TextBlock Text="% Costos Bancarios / Financieros (ej. 5):" FontSize="12" Margin="0,0,0,4" />
+                                                    <ui:TextBox Text="{Binding CostosBancariosEstimados, UpdateSourceTrigger=LostFocus}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Button Content="GUARDAR POLÍTICAS FINANCIERAS"
+                                       Appearance="Primary"
+                                       Icon="{ui:SymbolIcon Symbol=Save24}"
+                                       Height="40"
+                                       Command="{Binding GuardarConfiguracionCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 3: RETIROS DEL DUEÑO / SUELDO CON BARRA DE PROGRESO -->
+            <TabItem Header="Control de Retiros del Dueño">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="750" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Tope Mensual de Retiros Personales / Sueldo" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                    <TextBlock Text="Define el monto máximo presupuestado para extracciones personales o sueldo del propietario durante cada mes calendario."
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               Margin="0,0,0,16"
+                                               TextWrapping="Wrap" />
+
+                                    <TextBlock Text="Tope Mensual Asignado ($):" FontSize="12" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding TopeMensualRetiroDueño, UpdateSourceTrigger=LostFocus}" FontSize="16" FontWeight="Bold" Margin="0,0,0,16" />
+
+                                    <!-- BARRA DE PORCENTAJE VISUAL -->
+                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="16" CornerRadius="8" Margin="0,0,0,12">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,8">
+                                                <TextBlock Text="Progreso de Retiros del Mes en Curso:" FontWeight="SemiBold" FontSize="13" />
+                                                <TextBlock Text="{Binding PorcentajeRetiroConsumido, StringFormat='{}{0:N1}% Consumido'}"
+                                                           HorizontalAlignment="Right"
+                                                           FontWeight="ExtraBold"
+                                                           FontSize="15" />
+                                            </Grid>
+
+                                            <!-- Progress Bar -->
+                                            <ProgressBar Value="{Binding PorcentajeRetiroConsumido}"
+                                                         Maximum="100"
+                                                         Height="14"
+                                                         Margin="0,0,0,10" />
+
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Total Retirado Mes:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{Binding TotalRetiradoMes, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" FontSize="14" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                                    <TextBlock Text="Saldo Restante:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{Binding SaldoDisponibleRetiro, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" FontSize="14" Foreground="#107C41" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                                                    <TextBlock Text="Tope Presupuestado:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{Binding TopeMensualRetiroDueño, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" FontSize="14" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:Button Grid.Column="0"
+                                           Content="GUARDAR TOPE MENSUAL"
+                                           Appearance="Primary"
+                                           Icon="{ui:SymbolIcon Symbol=Save24}"
+                                           Height="40"
+                                           Margin="0,0,8,0"
+                                           Command="{Binding GuardarConfiguracionCommand}" />
+
+                                <ui:Button Grid.Column="1"
+                                           Content="Actualizar Cálculo"
+                                           Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                                           Height="40"
+                                           Command="{Binding RefrescarEstadoRetirosCommand}" />
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 4: APARIENCIA & TEMA -->
+            <TabItem Header="Apariencia &amp; Tema">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="750" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Tema Visual de la Aplicación" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                    <TextBlock Text="Selecciona el estilo visual que mejor se adapte a la iluminación de tu local comercial."
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               Margin="0,0,0,16" />
+
+                                    <UniformGrid Columns="2" Margin="0,0,0,16">
+                                        <ui:Button Content="Modo Oscuro (Dark)"
+                                                   Icon="{ui:SymbolIcon Symbol=WeatherMoon24}"
+                                                   Height="50"
+                                                   Margin="0,0,6,0"
+                                                   Command="{Binding CambiarTemaCommand}"
+                                                   CommandParameter="Dark" />
+
+                                        <ui:Button Content="Modo Claro (Light)"
+                                                   Icon="{ui:SymbolIcon Symbol=WeatherSunny24}"
+                                                   Height="50"
+                                                   Margin="6,0,0,0"
+                                                   Command="{Binding CambiarTemaCommand}"
+                                                   CommandParameter="Light" />
+                                    </UniformGrid>
+                                </StackPanel>
+                            </ui:Card>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 5: COPIAS DE SEGURIDAD & BACKUPS -->
+            <TabItem Header="Copias de Seguridad &amp; Backups">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="900" HorizontalAlignment="Left">
+                        <StackPanel>
+
+                            <!-- PANEL DE ACCIONES DE RESPALDO -->
+                            <ui:Card Padding="20" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Resguardos y Copias de la Base de Datos" FontSize="16" FontWeight="Bold" Margin="0,0,0,4" />
+                                    <TextBlock Text="Todos los registros del comercio (ventas, stock, clientes, deudas y cajas) se conservan de forma segura en la base local. Puedes crear copias instantáneas, guardarlas en pendrives o restaurar una copia previa."
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,14" />
+
+                                    <!-- AVISO DE AUTO-BACKUP -->
+                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="12,10"
+                                            Margin="0,0,0,16">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" Foreground="#107C41" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="Respaldo automático activado: Cada vez que se cierra un turno de caja en el mostrador, el sistema genera automáticamente una instantánea atómica con fecha y hora en la carpeta local de Backups."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- BOTONES DE ACCIÓN -->
+                                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                                        <ui:Button Content="Crear Copia de Seguridad Ahora"
+                                                   Icon="{ui:SymbolIcon Symbol=Save24}"
+                                                   Appearance="Primary"
+                                                   Height="44"
+                                                   Margin="0,0,6,0"
+                                                   Command="{Binding CrearBackupManualCommand}" />
+
+                                        <ui:Button Content="Exportar a Pendrive / Carpeta..."
+                                                   Icon="{ui:SymbolIcon Symbol=Share24}"
+                                                   Appearance="Secondary"
+                                                   Height="44"
+                                                   Margin="6,0,0,0"
+                                                   Command="{Binding ExportarBackupPersonalizadoCommand}" />
+                                    </UniformGrid>
+
+                                    <UniformGrid Columns="2">
+                                        <ui:Button Content="Abrir Carpeta de Respaldos"
+                                                   Icon="{ui:SymbolIcon Symbol=FolderOpen24}"
+                                                   Appearance="Secondary"
+                                                   Height="40"
+                                                   Margin="0,0,6,0"
+                                                   Command="{Binding AbrirCarpetaBackupsCommand}" />
+
+                                        <ui:Button Content="Restaurar Base de Datos..."
+                                                   Icon="{ui:SymbolIcon Symbol=ArrowCounterclockwise24}"
+                                                   Appearance="Secondary"
+                                                   Foreground="#D13438"
+                                                   Height="40"
+                                                   Margin="6,0,0,0"
+                                                   Command="{Binding RestaurarBackupCommand}" />
+                                    </UniformGrid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- HISTORIAL DE COPIAS RECIENTES -->
+                            <ui:Card Padding="20" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Historial de Respaldos Locales" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                                        <ui:Button Grid.Column="1"
+                                                   Content="Actualizar Lista"
+                                                   Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                                                   Appearance="Transparent"
+                                                   Command="{Binding CargarHistorialBackupsCommand}" />
+                                    </Grid>
+
+                                    <DataGrid ItemsSource="{Binding HistorialBackups}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              GridLinesVisibility="Horizontal"
+                                              HeadersVisibility="Column"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              MaxHeight="260">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="ARCHIVO" Binding="{Binding NombreArchivo}" FontWeight="SemiBold" Width="*" />
+                                            <DataGridTextColumn Header="FECHA Y HORA" Binding="{Binding FechaCreacion, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="150" />
+                                            <DataGridTextColumn Header="TAMAÑO" Binding="{Binding TamañoFormateado}" Width="100" />
+                                            <DataGridTemplateColumn Header="ORIGEN" Width="140">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="Manual / Exportado" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding EsAutomaticoCierre}" Value="True">
+                                                                            <Setter Property="Text" Value="Cierre de Caja" />
+                                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                                            <Setter Property="Foreground" Value="#107C41" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </ui:Card>
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 6: LICENCIA & CONTROL DE SUSCRIPCIÓN -->
+            <TabItem Header="Licencia &amp; Suscripción">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="750" HorizontalAlignment="Left">
+                        <StackPanel>
+
+                            <!-- ESTADO DE LA LICENCIA -->
+                            <ui:Card Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Estado Actual de la Licencia" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                    <TextBlock Text="{Binding LicenciaEstadoTexto}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#107C41"
+                                               Margin="0,0,0,12" />
+
+                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="12" CornerRadius="6" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Plan de Suscripción:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding LicenciaTipoPlanTexto}" FontSize="13" FontWeight="Bold" Foreground="#0078D4" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Width="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="16,0" />
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Vencimiento Actual:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="{Binding LicenciaFechaExpiracionTexto}" FontSize="13" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding LicenciaDiasRestantes, StringFormat=' ({0} días)'}" FontSize="13" FontWeight="Bold" Foreground="#0078D4" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <TextBlock Text="Código de Instalación del Equipo:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4" />
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding LicenciaCodigoInstalacion, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 FontFamily="Consolas"
+                                                 FontWeight="Bold"
+                                                 FontSize="14"
+                                                 Padding="8,6" />
+                                        <ui:Button Grid.Column="1"
+                                                   Content="Copiar Código"
+                                                   Icon="{ui:SymbolIcon Symbol=Copy24}"
+                                                   Appearance="Secondary"
+                                                   Margin="8,0,0,0"
+                                                   Command="{Binding CopiarCodigoInstalacionCommand}" />
+                                    </Grid>
+
+                                    <!-- RENOVACIÓN -->
+                                    <TextBlock Text="Ingresar Nueva Clave de Activación / Renovación:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ui:TextBox Grid.Column="0"
+                                                    Text="{Binding LicenciaClaveNuevaInput, UpdateSourceTrigger=PropertyChanged}"
+                                                    PlaceholderText="ej. PRM-20261005-XXXXXXXX o STD-20261005-XXXXXXXX"
+                                                    FontFamily="Consolas"
+                                                    FontWeight="SemiBold" />
+                                        <ui:Button Grid.Column="1"
+                                                   Content="APLICAR RENOVACIÓN"
+                                                   Appearance="Primary"
+                                                   FontWeight="Bold"
+                                                   Margin="8,0,0,0"
+                                                   Command="{Binding RenovarLicenciaCommand}" />
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 7: GESTIÓN DE USUARIOS & SEGURIDAD -->
+            <TabItem Header="Usuarios &amp; Seguridad">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="850" HorizontalAlignment="Left">
+                        <StackPanel>
+
+                            <!-- USUARIO ACTUALMENTE LOGUEADO -->
+                            <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="14,10"
+                                    Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="PersonCircle24" FontSize="24" Foreground="#0078D4" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Sesión Activa:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding UsuarioLogueadoTexto}" FontSize="14" FontWeight="Bold" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- PANEL 1: CAMBIAR MI CONTRASEÑA -->
+                                <ui:Card Grid.Column="0" Padding="16" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Cambiar mi Contraseña" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
+                                        <TextBlock Text="Actualiza la clave de acceso de tu usuario activo para mantener la seguridad de tu local."
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,12" />
+
+                                        <TextBlock Text="Contraseña Actual:" FontSize="12" Margin="0,0,0,4" />
+                                        <PasswordBox x:Name="TxtPassActual" Height="36" Margin="0,0,0,10" PasswordChanged="TxtPassActual_PasswordChanged" />
+
+                                        <TextBlock Text="Nueva Contraseña (mínimo 4 caracteres):" FontSize="12" Margin="0,0,0,4" />
+                                        <PasswordBox x:Name="TxtPassNuevo" Height="36" Margin="0,0,0,10" PasswordChanged="TxtPassNuevo_PasswordChanged" />
+
+                                        <TextBlock Text="Confirmar Nueva Contraseña:" FontSize="12" Margin="0,0,0,4" />
+                                        <PasswordBox x:Name="TxtPassConfirm" Height="36" Margin="0,0,0,14" PasswordChanged="TxtPassConfirm_PasswordChanged" />
+
+                                        <ui:Button Content="ACTUALIZAR CONTRASEÑA"
+                                                   Icon="{ui:SymbolIcon Symbol=Key24}"
+                                                   Appearance="Primary"
+                                                   Height="38"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Stretch"
+                                                   Command="{Binding CambiarContraseñaCommand}" />
+                                    </StackPanel>
+                                </ui:Card>
+
+                                <!-- PANEL 2: CREAR NUEVO USUARIO -->
+                                <ui:Card Grid.Column="1" Padding="16" Margin="8,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Crear Nuevo Usuario" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
+                                        <TextBlock Text="Agrega cuentas para tus vendedoras o cajeras con roles diferenciados."
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,12" />
+
+                                        <TextBlock Text="Nombre de Usuario (ej. vendedora1):" FontSize="12" Margin="0,0,0,4" />
+                                        <ui:TextBox Text="{Binding NuevoUsername, UpdateSourceTrigger=PropertyChanged}" Height="36" Margin="0,0,0,10" />
+
+                                        <TextBlock Text="Nombre Completo (ej. Laura Gómez):" FontSize="12" Margin="0,0,0,4" />
+                                        <ui:TextBox Text="{Binding NuevoNombreCompleto, UpdateSourceTrigger=PropertyChanged}" Height="36" Margin="0,0,0,10" />
+
+                                        <Grid Margin="0,0,0,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                                <TextBlock Text="Contraseña Inicial:" FontSize="12" Margin="0,0,0,4" />
+                                                <PasswordBox x:Name="TxtNuevoUserPass" Height="36" PasswordChanged="TxtNuevoUserPass_PasswordChanged" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                                <TextBlock Text="Rol Asignado:" FontSize="12" Margin="0,0,0,4" />
+                                                <ComboBox ItemsSource="{Binding RolesDisponibles}"
+                                                          SelectedItem="{Binding NuevoRol}"
+                                                          Height="36" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ui:Button Content="CREAR USUARIO"
+                                                   Icon="{ui:SymbolIcon Symbol=PersonAdd24}"
+                                                   Appearance="Secondary"
+                                                   Height="38"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Stretch"
+                                                   Command="{Binding CrearUsuarioCommand}" />
+                                    </StackPanel>
+                                </ui:Card>
+                            </Grid>
+
+                            <!-- PANEL 3: LISTA DE USUARIOS REGISTRADOS -->
+                            <ui:Card Padding="16" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Usuarios Registrados en el Sistema" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                                        <ui:Button Grid.Column="1"
+                                                   Content="Actualizar Lista"
+                                                   Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                                                   Appearance="Transparent"
+                                                   Command="{Binding CargarUsuariosCommand}" />
+                                    </Grid>
+
+                                    <DataGrid ItemsSource="{Binding Usuarios}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              GridLinesVisibility="Horizontal"
+                                              HeadersVisibility="Column"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              MaxHeight="220">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="USUARIO" Binding="{Binding Username}" FontWeight="SemiBold" Width="130" />
+                                            <DataGridTextColumn Header="NOMBRE COMPLETO" Binding="{Binding NombreCompleto}" Width="*" />
+                                            <DataGridTemplateColumn Header="ROL" Width="130">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Rol}" Value="Administrador">
+                                                                            <Setter Property="Background" Value="#E1DFDD" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <TextBlock Text="{Binding Rol}" FontWeight="SemiBold" FontSize="11" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn Header="ÚLTIMO INGRESO" Binding="{Binding UltimoIngreso, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="160" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </ui:Card>
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- PESTAÑA 8: ACTUALIZACIONES DEL SISTEMA (GITHUB RELEASES) -->
+            <TabItem Header="Actualizaciones">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <Grid MaxWidth="820" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <!-- ESTADO DE LA VERSIÓN ACTUAL -->
+                            <ui:Card Padding="18" Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" Background="#EFF6FF" Margin="0,0,16,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="ArrowSync24" FontSize="24" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Punto de Venta" FontSize="18" FontWeight="Bold" Margin="0,0,8,0" />
+                                            <Border Background="#2563EB" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding VersionActualTexto, StringFormat='v{0}'}" FontSize="12" FontWeight="Bold" Foreground="White" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding EstadoVerificacionActualizacion}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="2" 
+                                               Content="Buscar Actualizaciones" 
+                                               Icon="{ui:SymbolIcon Symbol=ArrowSync20}" 
+                                               Appearance="Primary"
+                                               Command="{Binding BuscarActualizacionesCommand}"
+                                               IsEnabled="{Binding PuedeBuscarActualizacion}"
+                                               VerticalAlignment="Center"
+                                               Padding="16,10" />
+                                </Grid>
+                            </ui:Card>
+
+                            <!-- TARJETA: NUEVA VERSIÓN DISPONIBLE -->
+                            <Border Margin="0,0,0,16" CornerRadius="8" Background="#FEFCE8" BorderBrush="#FDE047" BorderThickness="1" Padding="18"
+                                    Visibility="{Binding HayNuevaVersionDisponible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <TextBlock Text="🚀" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding NuevaVersionInfo.Titulo}" FontSize="16" FontWeight="Bold" Foreground="#854D0E" VerticalAlignment="Center" />
+                                                <Border Background="#CA8A04" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding NuevaVersionInfo.NuevaVersion, StringFormat='v{0}'}" FontSize="12" FontWeight="Bold" Foreground="White" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding NuevaVersionInfo.FechaPublicacion, StringFormat='Publicado: {0:dd/MM/yyyy HH:mm}'}" FontSize="12" Foreground="#A16207" />
+                                        </StackPanel>
+
+                                        <ui:Button Grid.Column="1" 
+                                                   Content="Descargar e Instalar Ahora" 
+                                                   Appearance="Success" 
+                                                   Icon="{ui:SymbolIcon Symbol=ArrowDownload20}"
+                                                   Command="{Binding DescargarEInstalarActualizacionCommand}"
+                                                   IsEnabled="{Binding PuedeInstalarActualizacion}"
+                                                   Padding="16,10"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <!-- BARRA DE PROGRESO DE DESCARGA -->
+                                    <StackPanel Margin="0,8,0,12" Visibility="{Binding EstaDescargandoActualizacion, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <ProgressBar Value="{Binding ProgresoDescargaPorcentaje}" Height="12" Minimum="0" Maximum="100" Margin="0,0,0,6" />
+                                        <TextBlock Text="{Binding ProgresoDescargaTexto}" FontSize="12" FontWeight="Medium" Foreground="#854D0E" />
+                                    </StackPanel>
+
+                                    <!-- NOTAS DE LA VERSIÓN / CHANGELOG -->
+                                    <TextBlock Text="Novedades y Cambios en esta Versión:" FontSize="13" FontWeight="Bold" Foreground="#713F12" Margin="0,6,0,4" />
+                                    <Border Background="White" CornerRadius="6" BorderBrush="#FEF08A" BorderThickness="1" Padding="12" MaxHeight="220">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <TextBlock Text="{Binding NuevaVersionInfo.NotasCambios}" FontSize="12" TextWrapping="Wrap" Foreground="#1E293B" FontFamily="Consolas, Segoe UI" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CONFIGURACIÓN DEL REPOSITORIO GITHUB -->
+                            <ui:Card Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Configuración de Origen de Actualizaciones" FontSize="15" FontWeight="Bold" Margin="0,0,0,4" />
+                                    <TextBlock Text="Canal de distribución automático basado en GitHub Releases (descargas seguras directas)." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,12" />
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Usuario / Organización de GitHub:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding GitHubRepoOwner, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                            <TextBlock Text="Nombre del Repositorio:" FontSize="12" Margin="0,0,0,4" />
+                                            <ui:TextBox Text="{Binding GitHubRepoName, UpdateSourceTrigger=LostFocus}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <TextBlock Text="* Al guardar cambios, el sistema buscará las actualizaciones en el repositorio de GitHub indicado." FontSize="11" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,12" />
+
+                                    <ui:Button Content="Guardar Repositorio" 
+                                               HorizontalAlignment="Left"
+                                               Appearance="Secondary"
+                                               Command="{Binding GuardarConfiguracionCommand}" 
+                                               Padding="14,6" />
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- SEGURIDAD Y PRESERVACIÓN DE DATOS -->
+                            <ui:Card Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="Seguridad y Protección de Datos" FontSize="14" FontWeight="Bold" Margin="0,0,0,6" />
+                                    <TextBlock Text="• Las actualizaciones reemplazan únicamente los ejecutables y librerías del sistema." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4" />
+                                    <TextBlock Text="• Tu base de datos (puntodeventa.db), fotos, logos, comprobantes y claves de IA quedan 100% intactos." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4" />
+                                    <TextBlock Text="• Antes de aplicar cada actualización, se realiza automáticamente un respaldo preventivo de seguridad." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </ui:Card>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>

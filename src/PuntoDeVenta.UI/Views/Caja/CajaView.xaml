@@ -1,0 +1,316 @@
+<UserControl x:Class="PuntoDeVenta.UI.Views.Caja.CajaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:PuntoDeVenta.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <converters:CurrencyConverter x:Key="CurrencyConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- 1. BANNER DE ESTADO DEL TURNO -->
+            <ui:Card Grid.Row="0" Margin="0,0,0,16" Padding="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Gestión de Turnos y Finanzas de Caja" FontSize="20" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Mensaje}" Margin="0,4,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            CornerRadius="6"
+                            Padding="12,6"
+                            Background="{Binding ColorEstadoTurno}">
+                        <TextBlock Text="{Binding TextoEstadoTurno}" FontWeight="Bold" Foreground="White" FontSize="13" />
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+            <!-- 2. FORMULARIO DE APERTURA (VISIBLE CUANDO NO HAY TURNO ABIERTO) -->
+            <ui:Card Grid.Row="1" Margin="0,0,0,16" Padding="20"
+                     Visibility="{Binding MostrarApertura, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel MaxWidth="500" HorizontalAlignment="Left">
+                    <TextBlock Text="Apertura de Turno de Caja" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Nombre del Cajero / Usuario:" Margin="0,0,0,4" />
+                    <ui:TextBox Text="{Binding UsuarioApertura, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Fondo Inicial de Efectivo ($):" Margin="0,0,0,4" />
+                    <ui:TextBox Text="{Binding MontoInicialApertura, UpdateSourceTrigger=LostFocus}" Margin="0,0,0,4" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding InfoFondoInicialSugerido}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Observaciones de Apertura (opcional):" Margin="0,0,0,4" />
+                    <ui:TextBox Text="{Binding ObservacionesApertura, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+
+                    <ui:Button Content="ABRIR TURNO DE CAJA"
+                               Icon="{ui:SymbolIcon Symbol=LockOpen24}"
+                               Appearance="Primary"
+                               Height="40"
+                               Command="{Binding AbrirTurnoCommand}" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 3. GESTIÓN ACTIVA: GASTOS Y ARQUEO -->
+            <Grid Grid.Row="2" Margin="0,0,0,16"
+                  Visibility="{Binding HayTurnoAbierto, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1.2*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 3A. REGISTRO DE GASTOS / RETIRO PROPIETARIO -->
+                <ui:Card Grid.Column="0" Margin="0,0,8,0" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Registrar Gasto o Retiro" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+                        <TextBlock Text="Categoría del Egreso:" Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding CategoriasGasto}"
+                                  SelectedItem="{Binding CategoriaGastoSeleccionada}"
+                                  DisplayMemberPath="Nombre"
+                                  Margin="0,0,0,12" />
+
+                        <TextBlock Text="Importe ($):" Margin="0,0,0,4" />
+                        <ui:TextBox Text="{Binding MontoGasto, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" FontSize="14" FontWeight="SemiBold" />
+
+                        <TextBlock Text="Descripción / Motivo:" Margin="0,0,0,4" />
+                        <ui:TextBox Text="{Binding DescripcionGasto, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                        <TextBlock Text="Nro. Comprobante / Factura (opcional):" Margin="0,0,0,4" />
+                        <ui:TextBox Text="{Binding ComprobanteGasto, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+
+                        <ui:Button Content="Registrar Salida de Dinero"
+                                   Icon="{ui:SymbolIcon Symbol=ArrowTrendingLines24}"
+                                   Appearance="Secondary"
+                                   Command="{Binding RegistrarGastoCommand}" />
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- 3B. ARQUEO Y CIERRE DE TURNO -->
+                <ui:Card Grid.Column="1" Margin="8,0,0,0" Padding="16">
+                    <StackPanel>
+                        <!-- Cabecera Arqueo con Botones de Acción Rápida -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Arqueo y Cierre de Turno" FontSize="16" FontWeight="Bold" />
+                                <TextBlock Text="Cuadre los valores físicos y declare el conteo antes de cerrar."
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:Button Content="{Binding TextoBotonMostrarSaldos}"
+                                           Appearance="Secondary"
+                                           Margin="0,0,6,0"
+                                           Padding="8,4"
+                                           FontSize="12"
+                                           ToolTip="Alterna la visibilidad de los saldos esperados por el sistema"
+                                           Command="{Binding AlternarMostrarSaldosEsperadosCommand}" />
+                                <ui:Button Content="⚡ Autocompletar"
+                                           Appearance="Secondary"
+                                           Padding="8,4"
+                                           FontSize="12"
+                                           ToolTip="Copia los saldos teóricos del sistema al conteo para cierre rápido si todo coincide"
+                                           Command="{Binding CopiarSaldosTeoricosAConteoCommand}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Separator Margin="0,0,0,12" />
+
+                        <!-- Canal 1: Efectivo -->
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Efectivo Físico en Cajón ($):" FontWeight="SemiBold" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        Visibility="{Binding MostrarSaldosEsperados, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="Esperado: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding SaldoTeorico.MontoTeoricoEfectivo, Converter={StaticResource CurrencyConverter}}" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding InfoDiferenciaEfectivo}" FontSize="11" FontWeight="Bold" Foreground="{Binding ColorDiferenciaEfectivo}" />
+                            </StackPanel>
+                        </Grid>
+                        <ui:TextBox Text="{Binding ConteoEfectivo, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" />
+
+                        <!-- Canal 2: Transferencias / QR -->
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Transferencias / QR Verificadas ($):" FontWeight="SemiBold" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        Visibility="{Binding MostrarSaldosEsperados, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="Esperado: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding SaldoTeorico.MontoTeoricoTransferencias, Converter={StaticResource CurrencyConverter}}" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding InfoDiferenciaTransferencias}" FontSize="11" FontWeight="Bold" Foreground="{Binding ColorDiferenciaTransferencias}" />
+                            </StackPanel>
+                        </Grid>
+                        <ui:TextBox Text="{Binding ConteoTransferencias, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" />
+
+                        <!-- Canal 3: Tarjetas Débito / Crédito -->
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Cupones Posnet / Tarjetas ($):" FontWeight="SemiBold" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        Visibility="{Binding MostrarSaldosEsperados, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="Esperado: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding SaldoTeorico.MontoTeoricoTarjetas, Converter={StaticResource CurrencyConverter}}" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding InfoDiferenciaTarjetas}" FontSize="11" FontWeight="Bold" Foreground="{Binding ColorDiferenciaTarjetas}" />
+                            </StackPanel>
+                        </Grid>
+                        <ui:TextBox Text="{Binding ConteoTarjetas, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" FontSize="14" FontWeight="SemiBold" />
+
+                        <!-- Panel Resumen en Vivo del Arqueo -->
+                        <Border CornerRadius="6"
+                                Padding="10"
+                                Margin="0,0,0,12"
+                                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="1.2*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Total Contado:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding TotalConteo, Converter={StaticResource CurrencyConverter}}" FontSize="13" FontWeight="Bold" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            Visibility="{Binding MostrarSaldosEsperados, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="Total Sistema:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding TotalTeorico, Converter={StaticResource CurrencyConverter}}" FontSize="13" FontWeight="Bold" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Right"
+                                            Visibility="{Binding MostrarSaldosEsperados, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="Diferencia Total:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding InfoDiferenciaTotal}" FontSize="13" FontWeight="Bold" Foreground="{Binding ColorDiferenciaTotal}" HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="Observaciones de Cierre (opcional):" Margin="0,0,0,4" />
+                        <ui:TextBox Text="{Binding ObservacionesCierre, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                        <ui:Button Content="PROCESAR ARQUEO Y CERRAR TURNO"
+                                   Icon="{ui:SymbolIcon Symbol=LockClosed24}"
+                                   Appearance="Danger"
+                                   Height="40"
+                                   Command="{Binding CerrarTurnoCiegoCommand}" />
+                    </StackPanel>
+                </ui:Card>
+            </Grid>
+
+            <!-- 4. RESULTADO AUDITADO DEL ÚLTIMO ARQUEO (SI EXISTE) -->
+            <ui:Card Grid.Row="3"
+                     Padding="20"
+                     Visibility="{Binding UltimoResumenCierre, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Auditoría de Arqueo y Cierre Ciego" FontSize="18" FontWeight="Bold" Margin="0,0,0,12" />
+
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="CANAL" FontWeight="Bold" />
+                        <TextBlock Grid.Column="1" Text="TEÓRICO SISTEMA" FontWeight="Bold" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="2" Text="REAL DECLARADO" FontWeight="Bold" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" Text="DIFERENCIA (SOBRANTE / FALTANTE)" FontWeight="Bold" HorizontalAlignment="Right" />
+                    </Grid>
+                    <Separator Margin="0,8" />
+
+                    <!-- Fila Efectivo -->
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Efectivo en Mostrador" FontWeight="Medium" />
+                        <TextBlock Grid.Column="1" Text="{Binding UltimoResumenCierre.MontoTeoricoEfectivo, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="2" Text="{Binding UltimoResumenCierre.MontoRealEfectivo, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" Text="{Binding UltimoResumenCierre.DiferenciaEfectivo, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <!-- Fila Transferencias -->
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Transferencias / QR" FontWeight="Medium" />
+                        <TextBlock Grid.Column="1" Text="{Binding UltimoResumenCierre.MontoTeoricoTransferencias, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="2" Text="{Binding UltimoResumenCierre.MontoRealTransferencias, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" Text="{Binding UltimoResumenCierre.DiferenciaTransferencias, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <!-- Fila Tarjetas -->
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Tarjetas Débito / Crédito" FontWeight="Medium" />
+                        <TextBlock Grid.Column="1" Text="{Binding UltimoResumenCierre.MontoTeoricoTarjetas, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="2" Text="{Binding UltimoResumenCierre.MontoRealTarjetas, Converter={StaticResource CurrencyConverter}}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" Text="{Binding UltimoResumenCierre.DiferenciaTarjetas, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" HorizontalAlignment="Right" />
+                    </Grid>
+                    <Separator Margin="0,8" />
+
+                    <!-- Totales -->
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="TOTAL GENERAL" FontSize="15" FontWeight="Bold" />
+                        <TextBlock Grid.Column="1" Text="{Binding UltimoResumenCierre.TotalTeorico, Converter={StaticResource CurrencyConverter}}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="2" Text="{Binding UltimoResumenCierre.TotalReal, Converter={StaticResource CurrencyConverter}}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" Text="{Binding UltimoResumenCierre.DiferenciaTotal, Converter={StaticResource CurrencyConverter}}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Right" Foreground="#107C41" />
+                    </Grid>
+                </StackPanel>
+            </ui:Card>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

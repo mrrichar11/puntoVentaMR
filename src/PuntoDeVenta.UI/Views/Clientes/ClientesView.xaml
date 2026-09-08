@@ -1,0 +1,333 @@
+<UserControl x:Class="PuntoDeVenta.UI.Views.Clientes.ClientesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:PuntoDeVenta.UI.Converters"
+             xmlns:finanzas="clr-namespace:PuntoDeVenta.Domain.Entities.Finanzas;assembly=PuntoDeVenta.Domain"
+             mc:Ignorable="d" 
+             d:DesignHeight="780" d:DesignWidth="1180">
+
+    <UserControl.Resources>
+        <converters:CurrencyConverter x:Key="CurrencyConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- BANNER DE MENSAJES -->
+        <Border Grid.Row="0" Margin="0,0,0,12" Padding="12,8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Mensaje}" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Clientes &amp; Cuenta Corriente (Fiado)" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <TabControl Grid.Row="1">
+
+            <!-- PESTAÑA 1: CUENTAS CORRIENTES Y COBRANZAS -->
+            <TabItem Header="Cuentas Corrientes y Cobranza en Caja">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="420" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="340" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- COLUMNA 1: LISTADO DE CLIENTES CON SALDOS -->
+                    <Grid Grid.Column="0" Margin="0,0,14,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" PlaceholderText="Buscar clienta por nombre, DNI o teléfono..." Text="{Binding FiltroTexto, UpdateSourceTrigger=PropertyChanged}">
+                                <ui:TextBox.InputBindings>
+                                    <KeyBinding Key="Return" Command="{Binding FiltrarClientesCommand}" />
+                                </ui:TextBox.InputBindings>
+                            </ui:TextBox>
+                            <ui:Button Grid.Column="1" Content="Buscar" Margin="6,0,0,0" Command="{Binding FiltrarClientesCommand}" />
+                        </Grid>
+
+                        <ui:Card Grid.Row="1" Padding="0">
+                            <DataGrid ItemsSource="{Binding Clientes}"
+                                      SelectedItem="{Binding ClienteSeleccionado}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      Background="Transparent"
+                                      BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="CLIENTA" Binding="{Binding NombreCompleto}" FontWeight="SemiBold" Width="*" />
+                                    <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="100" />
+                                    <DataGridTextColumn Header="SALDO DEUDA" Binding="{Binding SaldoDeudorActual, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" Width="110" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- COLUMNA 2: HISTORIAL DE MOVIMIENTOS CUENTA CORRIENTE -->
+                    <Grid Grid.Column="1" Margin="0,0,14,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="10" CornerRadius="6" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="Ficha de Cuenta Corriente:" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding ClienteSeleccionado.NombreCompleto, FallbackValue='(Seleccione una clienta)'}" FontSize="16" FontWeight="Bold" />
+                                <WrapPanel Margin="0,4,0,0">
+                                    <TextBlock Text="Límite Crédito: " FontSize="12" />
+                                    <TextBlock Text="{Binding ClienteSeleccionado.LimiteCredito, Converter={StaticResource CurrencyConverter}}" FontWeight="SemiBold" FontSize="12" Margin="0,0,12,0" />
+                                    <TextBlock Text="Saldo Adeudado: " FontSize="12" />
+                                    <TextBlock Text="{Binding ClienteSeleccionado.SaldoDeudorActual, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" Foreground="#C42B1C" FontSize="12" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <ui:Card Grid.Row="1" Padding="0">
+                            <DataGrid ItemsSource="{Binding HistorialMovimientos}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      Background="Transparent"
+                                      BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="FECHA" Binding="{Binding Fecha, StringFormat='dd/MM/yy HH:mm'}" Width="110" />
+                                    <DataGridTextColumn Header="TIPO" Binding="{Binding Tipo}" FontWeight="SemiBold" Width="100" />
+                                    <DataGridTextColumn Header="MONTO" Binding="{Binding Monto, Converter={StaticResource CurrencyConverter}}" FontWeight="Bold" Width="95" />
+                                    <DataGridTextColumn Header="SALDO POST." Binding="{Binding SaldoResultante, Converter={StaticResource CurrencyConverter}}" Width="95" />
+                                    <DataGridTextColumn Header="DETALLE" Binding="{Binding Detalle}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- COLUMNA 3: COBRO Y SALDO PREVIO -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,0,4,0">
+                            <!-- CARD 1: COBRO DE ENTREGA EN CAJA -->
+                            <ui:Card Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Cobrar Entrega a Cuenta" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                    <TextBlock Text="Registra el dinero que entrega la clienta directamente en la caja abierta y descuenta su deuda."
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
+
+                                    <TextBlock Text="Monto a Cobrar ($):" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding MontoEntrega, UpdateSourceTrigger=PropertyChanged}" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+                                    <TextBlock Text="Medio de Cobro / Canal:" Margin="0,0,0,4" />
+                                    <ComboBox SelectedValue="{Binding CanalEntrega}" SelectedValuePath="Tag" Height="36" Margin="0,0,0,12">
+                                        <ComboBoxItem Content="Efectivo de Mostrador" Tag="{x:Static finanzas:CanalDinero.Efectivo}" IsSelected="True" />
+                                        <ComboBoxItem Content="Transferencia Bancaria / QR" Tag="{x:Static finanzas:CanalDinero.TransferenciaQR}" />
+                                        <ComboBoxItem Content="Tarjeta de Débito" Tag="{x:Static finanzas:CanalDinero.TarjetaDebito}" />
+                                        <ComboBoxItem Content="Tarjeta de Crédito" Tag="{x:Static finanzas:CanalDinero.TarjetaCredito}" />
+                                    </ComboBox>
+
+                                    <TextBlock Text="Detalle / Motivo:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding DetalleEntrega, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                                    <TextBlock Text="Referencia / Nro. Comprobante:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding ReferenciaEntrega, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="ej. Transf 849202" Margin="0,0,0,16" />
+
+                                    <ui:Button Content="REGISTRAR INGRESO EN CAJA"
+                                               Icon="{ui:SymbolIcon Symbol=CheckmarkCircle24}"
+                                               Appearance="Primary"
+                                               Height="42"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Stretch"
+                                               Command="{Binding CobrarEntregaEnCajaCommand}" />
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- CARD 2: REGISTRAR DEUDA PREVIA / LIBRETA HISTÓRICA -->
+                            <ui:Card Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Anotar Deuda Previa (Libreta)" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
+                                    <TextBlock Text="Suma deuda anterior del cuaderno/libreta a la clienta seleccionada. No ingresa ni egresa dinero de caja."
+                                               FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap" />
+
+                                    <TextBlock Text="Monto de Deuda Anterior ($):" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding MontoSaldoHistorico, UpdateSourceTrigger=PropertyChanged}" FontSize="15" FontWeight="Bold" Margin="0,0,0,10" />
+
+                                    <TextBlock Text="Fecha Histórica:" Margin="0,0,0,4" />
+                                    <DatePicker SelectedDate="{Binding FechaSaldoHistorico}" Height="34" Margin="0,0,0,10" />
+
+                                    <TextBlock Text="Detalle / Observación:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding DetalleSaldoHistorico, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                                    <ui:Button Content="ASENTAR DEUDA HISTÓRICA"
+                                               Icon="{ui:SymbolIcon Symbol=BookContacts24}"
+                                               Appearance="Secondary"
+                                               Height="38"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Stretch"
+                                               Command="{Binding RegistrarSaldoHistoricoCommand}" />
+                                </StackPanel>
+                            </ui:Card>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- PESTAÑA 2: ALTA DE CLIENTAS -->
+            <TabItem Header="Registrar Nueva Clienta">
+                <Grid Margin="0,12,0,0">
+                    <ui:Card MaxWidth="650" HorizontalAlignment="Left" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Ficha de Nueva Clienta" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" />
+                            <TextBlock Text="Complete los datos para habilitar ventas a cuenta corriente."
+                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,16" />
+
+                            <TextBlock Text="Nombre y Apellido:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding NombreCompleto, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="ej. Laura Benítez" Margin="0,0,0,10" />
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="DNI / CUIT:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding DocumentoIdentidad, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Text="Teléfono / Celular:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding Telefono, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="ej. 11-4567-8901" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="Límite de Crédito Permitido ($):" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding LimiteCredito, UpdateSourceTrigger=PropertyChanged}" FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Text="Email (opcional):" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Dirección (opcional):" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding Direccion, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" />
+
+                            <TextBlock Text="Observaciones / Notas:" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding Notas, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Notas internas de confianza, pagos habituales, etc." Margin="0,0,0,12" />
+
+                            <!-- SALDO PREVIO / DEUDA HISTÓRICA -->
+                            <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="12" CornerRadius="6" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Deuda Previa / Saldo Histórico (Opcional - Cuaderno/Libreta)" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Si la clienta ya te adeudaba dinero de antes (libreta de fiados), cargalo aquí para que figure en su cuenta corriente. No afecta la caja del día." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Saldo Inicial ($):" Margin="0,0,0,4"/>
+                                            <ui:TextBox Text="{Binding SaldoInicial, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Detalle / Referencia:" Margin="0,0,0,4"/>
+                                            <ui:TextBox Text="{Binding DetalleSaldoInicial, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <ui:Button Content="GUARDAR CLIENTA"
+                                       Icon="{ui:SymbolIcon Symbol=PersonAdd24}"
+                                       Appearance="Primary"
+                                       Height="42"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Stretch"
+                                       Command="{Binding GuardarNuevoClienteCommand}" />
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+            </TabItem>
+
+            <!-- PESTAÑA 3: EDICIÓN DE CLIENTAS -->
+            <TabItem Header="Editar Clienta Seleccionada">
+                <Grid Margin="0,12,0,0">
+                    <ui:Card MaxWidth="650" HorizontalAlignment="Left" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Editar Ficha de Clienta" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" />
+                            <TextBlock Text="Modifique los datos de contacto, notas o límite de crédito de la clienta seleccionada en la lista."
+                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,16" />
+
+                            <TextBlock Text="Nombre y Apellido:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding EditNombreCompleto, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" />
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="DNI / CUIT:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding EditDocumentoIdentidad, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Text="Teléfono / Celular:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding EditTelefono, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="Límite de Crédito Permitido ($):" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding EditLimiteCredito, UpdateSourceTrigger=PropertyChanged}" FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Text="Email:" Margin="0,0,0,4" />
+                                    <ui:TextBox Text="{Binding EditEmail, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Dirección:" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding EditDireccion, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" />
+
+                            <TextBlock Text="Observaciones / Notas:" Margin="0,0,0,4" />
+                            <ui:TextBox Text="{Binding EditNotas, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+
+                            <ui:Button Content="GUARDAR CAMBIOS EN CLIENTA"
+                                       Icon="{ui:SymbolIcon Symbol=Save24}"
+                                       Appearance="Primary"
+                                       Height="42"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Stretch"
+                                       Command="{Binding GuardarEdicionClienteCommand}" />
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
