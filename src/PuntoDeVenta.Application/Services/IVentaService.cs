@@ -13,8 +13,14 @@ public interface IVentaService
     Task<IReadOnlyList<VarianteArticuloDto>> BuscarItemRapidoAsync(string inputEscaneoOManual, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Procesa la venta atómica: valida turno de caja, descuenta stock de variantes,
-    /// genera movimientos de auditoría, congela costos históricos e impacta la caja en sus respectivos canales.
+    /// Procesa la venta atómica: valida turno de caja, descuenta stock de variantes regulares,
+    /// procesa ítems de venta manual sin stock, congela costos históricos e impacta la caja en sus respectivos canales.
     /// </summary>
     Task<VentaRealizadaDto> ProcesarVentaAsync(RegistrarVentaDto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Permite actualizar el costo histórico de una línea de venta realizada con anterioridad
+    /// (ej. venta manual donde no se tenía el costo a mano al momento del cobro).
+    /// </summary>
+    Task<bool> ActualizarCostoLineaVentaAsync(Guid lineaVentaId, decimal nuevoCosto, CancellationToken cancellationToken = default);
 }

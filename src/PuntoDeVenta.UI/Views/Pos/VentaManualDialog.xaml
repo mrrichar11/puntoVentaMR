@@ -1,0 +1,133 @@
+<Window x:Class="PuntoDeVenta.UI.Views.Pos.VentaManualDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Venta Manual / Ítem Rápido"
+        Height="540" Width="480"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Background="{DynamicResource ApplicationBackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⚡" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock Text="Venta Manual / Ítem sin Stock" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Permite cobrar artículos no catalogados o ventas pasadas. No exige ni descuenta stock e impacta en caja."
+                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- FORMULARIO -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ui:Card Padding="16">
+                <StackPanel>
+                    <!-- Descripción -->
+                    <TextBlock Text="Descripción del Producto / Concepto (*):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                    <ui:TextBox x:Name="TxtDescripcion"
+                                PlaceholderText="ej. Remera Estampada, Pantalón Lino, etc."
+                                Margin="0,0,0,12"
+                                FontSize="14" />
+
+                    <!-- Cantidad -->
+                    <TextBlock Text="Cantidad a Vender:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                    <ui:TextBox x:Name="TxtCantidad"
+                                Text="1"
+                                Margin="0,0,0,12"
+                                FontWeight="Bold"
+                                Width="120"
+                                HorizontalAlignment="Left" />
+
+                    <!-- Precio de Costo -->
+                    <TextBlock Text="Precio Costo ($) (Opcional):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                    <ui:TextBox x:Name="TxtPrecioCosto"
+                                PlaceholderText="ej. 6000 (o dejar vacío si no lo tiene)"
+                                Margin="0,0,0,6"
+                                TextChanged="TxtPrecioCosto_TextChanged" />
+
+                    <!-- Banner de Precio Sugerido por Margen de Tienda -->
+                    <Border x:Name="PnlPrecioSugerido"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10,6"
+                            Margin="0,0,0,12"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="TxtTextoPrecioSugerido"
+                                       Text="Sugerido con margen (+100%): $12.000"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center" />
+                            <ui:Button Grid.Column="1"
+                                       Content="⚡ Usar Sugerido"
+                                       Appearance="Secondary"
+                                       FontSize="10"
+                                       Height="26"
+                                       Padding="6,0"
+                                       Click="BtnUsarSugerido_Click" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Precio Final de Venta -->
+                    <TextBlock Text="Precio Final de Venta al Cliente ($) (*):" FontWeight="Bold" FontSize="12" Margin="0,0,0,4" />
+                    <ui:TextBox x:Name="TxtPrecioVenta"
+                                PlaceholderText="ej. 15000"
+                                Margin="0,0,0,12"
+                                FontSize="15"
+                                FontWeight="Bold" />
+
+                    <!-- Talle y Color Opcionales -->
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                            <TextBlock Text="Talle (Opcional):" FontSize="11" Margin="0,0,0,4" />
+                            <ui:TextBox x:Name="TxtTalle" PlaceholderText="ej. L, 42, U" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                            <TextBlock Text="Color (Opcional):" FontSize="11" Margin="0,0,0,4" />
+                            <ui:TextBox x:Name="TxtColor" PlaceholderText="ej. Negro, Azul" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ui:Card>
+        </ScrollViewer>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <Border Grid.Row="2" Margin="0,16,0,0" Padding="0,12,0,0" BorderBrush="{DynamicResource SubtleFillColorSecondaryBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="Cancelar"
+                           Appearance="Secondary"
+                           Margin="0,0,8,0"
+                           Padding="16,8"
+                           IsCancel="True" />
+                <ui:Button x:Name="BtnAgregar"
+                           Content="AGREGAR AL CARRITO"
+                           Appearance="Primary"
+                           FontWeight="Bold"
+                           Padding="18,8"
+                           IsDefault="True"
+                           Click="BtnAgregar_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

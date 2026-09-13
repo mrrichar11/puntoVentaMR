@@ -226,6 +226,66 @@ public static class DataSeeder
             });
         }
 
+        await AsegurarArticuloManualAsync(context);
+
         await context.SaveChangesAsync();
+    }
+
+    public static readonly Guid GenericManualVariantId = new Guid("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid GenericManualArticleId = new Guid("22222222-2222-2222-2222-222222222222");
+
+    public static async Task<VarianteArticulo> AsegurarArticuloManualAsync(AppDbContext context)
+    {
+        var variante = await context.VariantesArticulo.Include(v => v.Articulo).FirstOrDefaultAsync(v => v.Id == GenericManualVariantId || v.SKU == "MANUAL-GEN");
+        if (variante != null) return variante;
+
+        var categoria = await context.Categorias.FirstOrDefaultAsync();
+        if (categoria == null)
+        {
+            categoria = new Categoria { Nombre = "General", Descripcion = "Artículos Generales" };
+            context.Categorias.Add(categoria);
+            await context.SaveChangesAsync();
+        }
+
+        var marca = await context.Marcas.FirstOrDefaultAsync();
+        if (marca == null)
+        {
+            marca = new Marca { Nombre = "Genérica" };
+            context.Marcas.Add(marca);
+            await context.SaveChangesAsync();
+        }
+
+        var articulo = await context.Articulos.FirstOrDefaultAsync(a => a.Id == GenericManualArticleId || a.CodigoEstilo == "MANUAL-GEN");
+        if (articulo == null)
+        {
+            articulo = new Articulo
+            {
+                Id = GenericManualArticleId,
+                Nombre = "Venta Manual / Ítem Rápido",
+                CodigoEstilo = "MANUAL-GEN",
+                CategoriaId = categoria.Id,
+                MarcaId = marca.Id,
+                Activo = true
+            };
+            context.Articulos.Add(articulo);
+            await context.SaveChangesAsync();
+        }
+
+        variante = new VarianteArticulo
+        {
+            Id = GenericManualVariantId,
+            ArticuloId = articulo.Id,
+            SKU = "MANUAL-GEN",
+            Talle = "U",
+            Color = "Único",
+            PrecioCosto = 0m,
+            PrecioLista = 0m,
+            StockActual = 999999,
+            StockMinimo = 0,
+            Activo = true
+        };
+        context.VariantesArticulo.Add(variante);
+        await context.SaveChangesAsync();
+        return variante;
     }
 }

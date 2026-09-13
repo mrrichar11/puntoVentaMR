@@ -327,6 +327,105 @@ public class VentaServiceTests : IDisposable
         resultados[0].Talle.Should().Be("42");
     }
 
+    [Fact]
+    public async Task ProcesarVentaAsync_ItemVentaManual_NoDescuentaStock_ImpactaEnTotalesYCaja()
+    {
+        // Arrange
+        var turno = await _cajaService.AbrirTurnoAsync(new AbrirCajaDto { Usuario = "Cajero", MontoInicialEfectivo = 10000m });
+        var dto = new RegistrarVentaDto
+        {
+            TurnoCajaId = turno.Id,
+            Items = new List<ItemCarritoDto>
+            {
+                new()
+                {
+                    EsVentaManual = true,
+                    DescripcionManual = "Remera Estampada",
+                    PrecioCostoManual = 6000m,
+                    PrecioVentaManual = 15000m,
+                    TalleManual = "L",
+                    ColorManual = "Negro",
+                    Cantidad = 2
+                }
+            },
+            Pagos = new List<PagoDto>
+            {
+                new()
+                {
+                    Canal = CanalDinero.Efectivo,
+                    Monto = 30000m
+                }
+            }
+        };
+
+        var movimientosStockAntes = await _context.MovimientosStock.CountAsync();
+
+        // Act
+        var resultado = await _ventaService.ProcesarVentaAsync(dto);
+
+        // Assert
+        resultado.Should().NotBeNull();
+        resultado.TotalFinalCobrado.Should().Be(30000m);
+        resultado.MargenBrutoReal.Should().Be(18000m); // $30.000 - ($6.000 * 2)
+
+        // Verificar que la base de datos guardó la línea con su descripción inmutable
+        var ventaDb = await _context.Ventas.Include(v => v.Lineas).FirstOrDefaultAsync(v => v.Id == resultado.VentaId);
+        ventaDb.Should().NotBeNull();
+        ventaDb!.Lineas.Should().HaveCount(1);
+        var linea = ventaDb.Lineas.First();
+        linea.DescripcionArticulo.Should().Be("Remera Estampada");
+        linea.EsVentaManual.Should().BeTrue();
+        linea.CostoUnitarioHistorico.Should().Be(6000m);
+        linea.PrecioFinalCobrado.Should().Be(15000m);
+
+        // IMPORTANTE: Verificar que NO se generó movimiento de inventario para la venta manual
+        var movimientosStockDespues = await _context.MovimientosStock.CountAsync();
+        movimientosStockDespues.Should().Be(movimientosStockAntes);
+    }
+
+    [Fact]
+    public async Task ActualizarCostoLineaVentaAsync_ModificaCostoHistoricoYRecalculaVenta()
+    {
+        // Arrange
+        var turno = await _cajaService.AbrirTurnoAsync(new AbrirCajaDto { Usuario = "Cajero", MontoInicialEfectivo = 10000m });
+        var dto = new RegistrarVentaDto
+        {
+            TurnoCajaId = turno.Id,
+            Items = new List<ItemCarritoDto>
+            {
+                new()
+                {
+                    EsVentaManual = true,
+                    DescripcionManual = "Pantalón Cargo",
+                    PrecioCostoManual = 0m, // Inicialmente sin costo a mano
+                    PrecioVentaManual = 25000m,
+                    Cantidad = 1
+                }
+            },
+            Pagos = new List<PagoDto>
+            {
+                new() { Canal = CanalDinero.Efectivo, Monto = 25000m }
+            }
+        };
+
+        var venta = await _ventaService.ProcesarVentaAsync(dto);
+        var linea = await _context.LineasVenta.FirstOrDefaultAsync(l => l.VentaId == venta.VentaId);
+        linea.Should().NotBeNull();
+        linea!.CostoUnitarioHistorico.Should().Be(0m);
+
+        // Act: El comerciante asienta el costo más tarde
+        var actualizado = await _ventaService.ActualizarCostoLineaVentaAsync(linea.Id, 11000m);
+
+        // Assert
+        actualizado.Should().BeTrue();
+        var lineaDb = await _context.LineasVenta.FirstOrDefaultAsync(l => l.Id == linea.Id);
+        lineaDb!.CostoUnitarioHistorico.Should().Be(11000m);
+
+        var ventaDb = await _context.Ventas.FirstOrDefaultAsync(v => v.Id == venta.VentaId);
+        ventaDb!.CostoTotalHistorico.Should().Be(11000m);
+        ventaDb.MargenBrutoReal.Should().Be(14000m); // $25.000 - $11.000
+    }
+
     public void Dispose()
     {
         _context.Dispose();

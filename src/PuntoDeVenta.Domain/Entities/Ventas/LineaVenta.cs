@@ -20,6 +20,7 @@ public class LineaVenta : BaseEntity
     public string SKU { get; set; } = string.Empty;
     public string Talle { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
+    public bool EsVentaManual { get; set; }
 
     public int Cantidad { get; set; }
 

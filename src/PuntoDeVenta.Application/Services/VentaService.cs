@@ -29,7 +29,7 @@ public class VentaService : IVentaService
 
         // 1. Detección directa por Lector Láser (EAN-13, CODE128 o SKU exacto)
         var varianteExacta = await _unitOfWork.Variantes.FirstOrDefaultAsync(v =>
-            v.Activo && (v.CodigoBarras == entradaLimpia || v.SKU.ToUpper() == entradaLimpia.ToUpper()),
+            v.Activo && v.SKU != "MANUAL-GEN" && (v.CodigoBarras == entradaLimpia || v.SKU.ToUpper() == entradaLimpia.ToUpper()),
             cancellationToken);
 
         if (varianteExacta != null)
@@ -39,7 +39,7 @@ public class VentaService : IVentaService
 
         // 2. Búsqueda Manual Interactiva por coincidencia flexible (múltiples palabras y plurales)
         var variantes = (await _unitOfWork.Variantes.GetAllAsync(cancellationToken))
-            .Where(v => v.Activo && (v.Articulo == null || v.Articulo.Activo));
+            .Where(v => v.Activo && v.SKU != "MANUAL-GEN" && (v.Articulo == null || v.Articulo.Activo));
         var tokens = entradaLimpia.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         var coincidencias = variantes.Where(v =>
@@ -114,6 +114,45 @@ public class VentaService : IVentaService
         {
             if (item.Cantidad <= 0)
                 throw new ArgumentException("La cantidad de cada ítem debe ser mayor a cero.");
+
+            // Caso 3.A: Venta Manual / Ítem Rápido sin Stock
+            if (item.EsVentaManual)
+            {
+                var varianteManual = await _unitOfWork.Variantes.FirstOrDefaultAsync(v => v.SKU == "MANUAL-GEN", cancellationToken)
+                    ?? await AsegurarVarianteManualAsync(cancellationToken);
+
+                var precioCobrado = item.PrecioVentaManual ?? (item.Variante?.PrecioLista ?? 0m);
+                var costo = item.PrecioCostoManual ?? 0m;
+
+                var lineaManual = new LineaVenta
+                {
+                    VentaId = venta.Id,
+                    Venta = venta,
+                    VarianteId = varianteManual.Id,
+                    Variante = varianteManual,
+                    DescripcionArticulo = !string.IsNullOrWhiteSpace(item.DescripcionManual) ? item.DescripcionManual.Trim() : "Venta Manual / Ítem Rápido",
+                    SKU = "MANUAL",
+                    Talle = !string.IsNullOrWhiteSpace(item.TalleManual) ? item.TalleManual.Trim() : "-",
+                    Color = !string.IsNullOrWhiteSpace(item.ColorManual) ? item.ColorManual.Trim() : "-",
+                    EsVentaManual = true,
+                    Cantidad = item.Cantidad,
+                    PrecioListaUnitario = precioCobrado,
+                    DescuentoOfertaUnitario = 0m,
+                    DescuentoMedioPagoUnitario = 0m,
+                    RecargoMedioPagoUnitario = 0m,
+                    PrecioFinalCobrado = precioCobrado,
+                    CostoUnitarioHistorico = costo
+                };
+
+                venta.Lineas.Add(lineaManual);
+
+                subtotalLista += lineaManual.PrecioListaUnitario * lineaManual.Cantidad;
+                totalFinalCobrado += lineaManual.SubtotalCobrado;
+                costoTotalHistorico += lineaManual.CostoTotalHistorico;
+
+                // Importante: No se descuenta stock ni se genera movimiento de inventario
+                continue;
+            }
 
             var variante = await _unitOfWork.Variantes.GetByIdAsync(item.VarianteId, cancellationToken)
                 ?? throw new KeyNotFoundException($"No se encontró el producto variante con Id '{item.VarianteId}'.");
@@ -347,5 +386,71 @@ public class VentaService : IVentaService
         }
 
         return false;
+    }
+
+    private async Task<VarianteArticulo> AsegurarVarianteManualAsync(CancellationToken cancellationToken)
+    {
+        var variante = await _unitOfWork.Variantes.FirstOrDefaultAsync(v => v.SKU == "MANUAL-GEN", cancellationToken);
+        if (variante != null) return variante;
+
+        var articulo = await _unitOfWork.Articulos.FirstOrDefaultAsync(a => a.CodigoEstilo == "MANUAL-GEN", cancellationToken);
+        if (articulo == null)
+        {
+            var categoria = (await _unitOfWork.Categorias.GetAllAsync(cancellationToken)).FirstOrDefault();
+            var marca = (await _unitOfWork.Marcas.GetAllAsync(cancellationToken)).FirstOrDefault();
+
+            articulo = new Articulo
+            {
+                Nombre = "Venta Manual / Ítem Rápido",
+                CodigoEstilo = "MANUAL-GEN",
+                CategoriaId = categoria?.Id ?? Guid.Empty,
+                MarcaId = marca?.Id ?? Guid.Empty,
+                Activo = true
+            };
+            await _unitOfWork.Articulos.AddAsync(articulo, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        variante = new VarianteArticulo
+        {
+            ArticuloId = articulo.Id,
+            SKU = "MANUAL-GEN",
+            Talle = "U",
+            Color = "Único",
+            PrecioCosto = 0m,
+            PrecioLista = 0m,
+            StockActual = 999999,
+            StockMinimo = 0,
+            Activo = true
+        };
+        await _unitOfWork.Variantes.AddAsync(variante, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return variante;
+    }
+
+    public async Task<bool> ActualizarCostoLineaVentaAsync(Guid lineaVentaId, decimal nuevoCosto, CancellationToken cancellationToken = default)
+    {
+        if (nuevoCosto < 0) throw new ArgumentException("El costo no puede ser negativo.", nameof(nuevoCosto));
+
+        var linea = await _unitOfWork.LineasVenta.GetByIdAsync(lineaVentaId, cancellationToken);
+        if (linea == null) return false;
+
+        linea.CostoUnitarioHistorico = nuevoCosto;
+        _unitOfWork.LineasVenta.Update(linea);
+
+        // Recalcular costo total histórico de la venta padre
+        var venta = await _unitOfWork.Ventas.GetByIdAsync(linea.VentaId, cancellationToken);
+        if (venta != null)
+        {
+            var lineas = (await _unitOfWork.LineasVenta.GetAllAsync(cancellationToken))
+                .Where(l => l.VentaId == venta.Id)
+                .ToList();
+            venta.CostoTotalHistorico = lineas.Sum(l => l.CostoUnitarioHistorico * l.Cantidad);
+            _unitOfWork.Ventas.Update(venta);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
     }
 }

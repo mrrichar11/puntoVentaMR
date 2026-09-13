@@ -13,6 +13,10 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
 
+    <UserControl.InputBindings>
+        <KeyBinding Key="F4" Command="{Binding AbrirVentaManualCommand}" />
+    </UserControl.InputBindings>
+
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -69,15 +73,17 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <ui:TextBox Grid.Column="0"
-                                PlaceholderText="Escanear código de barras (EAN-13 / SKU) o buscar por modelo, talle, color..."
+                                PlaceholderText="Escanear código (EAN-13/SKU) o buscar prenda... (F4: Venta Manual)"
                                 Text="{Binding BusquedaTexto, UpdateSourceTrigger=PropertyChanged}"
                                 FontSize="15"
                                 VerticalAlignment="Center">
                         <ui:TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding BuscarOAgregarCommand}" />
+                            <KeyBinding Key="F4" Command="{Binding AbrirVentaManualCommand}" />
                         </ui:TextBox.InputBindings>
                     </ui:TextBox>
 
@@ -87,6 +93,14 @@
                                Appearance="Primary"
                                Margin="8,0,0,0"
                                Command="{Binding BuscarOAgregarCommand}" />
+
+                    <ui:Button Grid.Column="2"
+                               Content="➕ Venta Manual"
+                               Appearance="Secondary"
+                               FontWeight="SemiBold"
+                               Margin="8,0,0,0"
+                               ToolTip="Cargar producto o venta manual sin stock (F4)"
+                               Command="{Binding AbrirVentaManualCommand}" />
                 </Grid>
             </ui:Card>
 
@@ -162,7 +176,19 @@
                           BorderThickness="0"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" FontWeight="SemiBold" Width="110" />
+                        <DataGridTemplateColumn Header="SKU" Width="115">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SKU}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <Border Visibility="{Binding EsVentaManual, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="#FEF3C7" BorderBrush="#D97706" BorderThickness="1" CornerRadius="3" Padding="3,1" Margin="5,0,0,0" ToolTip="Ítem de venta manual (sin descuento de stock)">
+                                            <TextBlock Text="⚡Manual" FontSize="9" FontWeight="Bold" Foreground="#B45309" />
+                                        </Border>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="PRODUCTO" Binding="{Binding Descripcion}" Width="*" MinWidth="140" />
                         <DataGridTextColumn Header="TALLE" Binding="{Binding Talle}" Width="55" />
                         <DataGridTextColumn Header="COLOR" Binding="{Binding Color}" Width="70" />

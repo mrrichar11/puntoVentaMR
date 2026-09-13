@@ -29,5 +29,6 @@ public static class DatabaseInitializer
         try { await context.Database.ExecuteSqlRawAsync("ALTER TABLE Configuraciones ADD COLUMN GitHubRepoOwner TEXT NOT NULL DEFAULT 'mrrichar11';"); } catch { }
         try { await context.Database.ExecuteSqlRawAsync("ALTER TABLE Configuraciones ADD COLUMN GitHubRepoName TEXT NOT NULL DEFAULT 'puntoVentaMR';"); } catch { }
         try { await context.Database.ExecuteSqlRawAsync("UPDATE Configuraciones SET GitHubRepoOwner = 'mrrichar11', GitHubRepoName = 'puntoVentaMR' WHERE GitHubRepoOwner = 'Fliac' OR GitHubRepoOwner IS NULL OR GitHubRepoOwner = '';"); } catch { }
+        try { await context.Database.ExecuteSqlRawAsync("ALTER TABLE LineasVenta ADD COLUMN EsVentaManual INTEGER NOT NULL DEFAULT 0;"); } catch { }
     }
 }

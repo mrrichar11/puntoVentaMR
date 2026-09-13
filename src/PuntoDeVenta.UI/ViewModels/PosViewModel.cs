@@ -24,6 +24,9 @@ public partial class ItemCarritoModel : ObservableObject
     public bool EsEnOferta { get; set; }
     public decimal PrecioUnitarioEfectivo => EsEnOferta ? PrecioOferta!.Value : PrecioLista;
 
+    public bool EsVentaManual { get; set; }
+    public decimal PrecioCosto { get; set; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Subtotal))]
     private int _cantidad = 1;
@@ -344,12 +347,62 @@ public partial class PosViewModel : ObservableObject
 
             if (resultados.Count == 0)
             {
-                MostrarMensaje("No se encontraron productos coincidentes.", true);
+                MostrarMensaje($"No se encontró '{BusquedaTexto}'. Presione '➕ Venta Manual' (F4) para cobrarlo sin stock.", true);
             }
         }
         catch (Exception ex)
         {
             MostrarMensaje($"Error al buscar: {ex.Message}", true);
+        }
+    }
+
+    [RelayCommand]
+    public async Task AbrirVentaManualAsync()
+    {
+        decimal margen = 100m;
+        try
+        {
+            var cfg = await _configuracionService.ObtenerConfiguracionAsync();
+            if (cfg != null && cfg.MargenGananciaSugerido > 0)
+            {
+                margen = cfg.MargenGananciaSugerido;
+            }
+        }
+        catch
+        {
+            // Fallback estándar
+        }
+
+        var dialog = new Views.Pos.VentaManualDialog(margen, BusquedaTexto);
+        if (System.Windows.Application.Current?.MainWindow != null)
+        {
+            dialog.Owner = System.Windows.Application.Current.MainWindow;
+        }
+
+        if (dialog.ShowDialog() == true)
+        {
+            var item = new ItemCarritoModel
+            {
+                VarianteId = Guid.Empty,
+                SKU = "MANUAL",
+                Descripcion = dialog.DescripcionArticulo,
+                Talle = dialog.TalleArticulo,
+                Color = dialog.ColorArticulo,
+                PrecioLista = dialog.PrecioVentaArticulo,
+                PrecioOferta = null,
+                EsEnOferta = false,
+                PrecioCosto = dialog.PrecioCostoArticulo,
+                Cantidad = dialog.CantidadArticulo,
+                StockDisponible = 999999,
+                EsVentaManual = true
+            };
+
+            Carrito.Add(item);
+            RecalcularTotales();
+            BusquedaTexto = string.Empty;
+            ResultadosBusqueda.Clear();
+            TieneResultadosBusqueda = false;
+            MostrarMensaje($"Agregado: {item.Descripcion} ({item.Cantidad} x ${item.PrecioLista:N0})", false);
         }
     }
 
@@ -402,7 +455,7 @@ public partial class PosViewModel : ObservableObject
     public void IncrementarCantidad(ItemCarritoModel item)
     {
         if (item == null) return;
-        if (item.Cantidad + 1 > item.StockDisponible)
+        if (!item.EsVentaManual && item.Cantidad + 1 > item.StockDisponible)
         {
             MostrarMensaje($"Stock insuficiente (Disponible: {item.StockDisponible}).", true);
             return;
@@ -689,7 +742,13 @@ public partial class PosViewModel : ObservableObject
                 Items = Carrito.Select(c => new ItemCarritoDto
                 {
                     VarianteId = c.VarianteId,
-                    Cantidad = c.Cantidad
+                    Cantidad = c.Cantidad,
+                    EsVentaManual = c.EsVentaManual,
+                    DescripcionManual = c.Descripcion,
+                    PrecioCostoManual = c.PrecioCosto,
+                    PrecioVentaManual = c.PrecioLista,
+                    TalleManual = c.Talle,
+                    ColorManual = c.Color
                 }).ToList(),
                 Pagos = new List<PagoDto>()
             };
