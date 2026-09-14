@@ -49,9 +49,18 @@ public class GitHubUpdateService : IUpdateService
             using var response = await _httpClient.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {
-                resultado.Mensaje = response.StatusCode == System.Net.HttpStatusCode.NotFound
-                    ? "No se encontraron releases públicos en el repositorio."
-                    : $"Respuesta del servidor GitHub: {(int)response.StatusCode} {response.ReasonPhrase}";
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    resultado.Mensaje = "No se encontraron releases publicadas aún en GitHub. Debes crear la primera release.";
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    resultado.Mensaje = "Límite temporal de consultas a GitHub alcanzado (60/hora). Se restablece automáticamente en unos minutos.";
+                }
+                else
+                {
+                    resultado.Mensaje = $"Respuesta de GitHub: {(int)response.StatusCode} {response.ReasonPhrase}";
+                }
                 return resultado;
             }
 
