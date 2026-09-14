@@ -840,7 +840,7 @@
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Punto de Venta" FontSize="18" FontWeight="Bold" Margin="0,0,8,0" />
+                                            <TextBlock Text="MR SYS Retail" FontSize="18" FontWeight="Bold" Margin="0,0,8,0" />
                                             <Border Background="#2563EB" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding VersionActualTexto, StringFormat='v{0}'}" FontSize="12" FontWeight="Bold" Foreground="White" />
                                             </Border>
@@ -907,36 +907,22 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- CONFIGURACIÓN DEL REPOSITORIO GITHUB -->
+                            <!-- INFORMACIÓN DEL CANAL DE DISTRIBUCIÓN -->
                             <ui:Card Padding="18" Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="Configuración de Origen de Actualizaciones" FontSize="15" FontWeight="Bold" Margin="0,0,0,4" />
-                                    <TextBlock Text="Canal de distribución automático basado en GitHub Releases (descargas seguras directas)." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,12" />
-
-                                    <Grid Margin="0,0,0,12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="Usuario / Organización de GitHub:" FontSize="12" Margin="0,0,0,4" />
-                                            <ui:TextBox Text="{Binding GitHubRepoOwner, UpdateSourceTrigger=LostFocus}" />
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                            <TextBlock Text="Nombre del Repositorio:" FontSize="12" Margin="0,0,0,4" />
-                                            <ui:TextBox Text="{Binding GitHubRepoName, UpdateSourceTrigger=LostFocus}" />
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <TextBlock Text="* Al guardar cambios, el sistema buscará las actualizaciones en el repositorio de GitHub indicado." FontSize="11" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,12" />
-
-                                    <ui:Button Content="Guardar Repositorio" 
-                                               HorizontalAlignment="Left"
-                                               Appearance="Secondary"
-                                               Command="{Binding GuardarConfiguracionCommand}" 
-                                               Padding="14,6" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ui:SymbolIcon Symbol="CloudCheckmark24" FontSize="18" Foreground="#2563EB" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Canal Oficial de Distribución y Soporte" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="Terminal conectada a los servidores oficiales de MR SYS Retail. Las actualizaciones se distribuyen con cifrado HTTPS y verificación de integridad." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,8" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,8,0">
+                                            <TextBlock Text="● Canal Estable (Producción)" FontSize="11" FontWeight="SemiBold" Foreground="#15803D" />
+                                        </Border>
+                                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                                            <TextBlock Text="Cifrado TLS 1.3 / SHA-256" FontSize="11" FontWeight="Medium" Foreground="#64748B" />
+                                        </Border>
+                                    </StackPanel>
                                 </StackPanel>
                             </ui:Card>
 

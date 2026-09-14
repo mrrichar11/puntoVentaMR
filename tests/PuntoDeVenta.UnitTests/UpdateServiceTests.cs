@@ -117,7 +117,7 @@ public class UpdateServiceTests
 
         resultado.HayActualizacion.Should().BeFalse();
         resultado.HayActualizacionDisponible.Should().BeFalse();
-        resultado.Mensaje.Should().Contain("No se encontraron releases");
+        resultado.Mensaje.Should().Contain("No se encontraron nuevas versiones");
     }
 
     [Fact]

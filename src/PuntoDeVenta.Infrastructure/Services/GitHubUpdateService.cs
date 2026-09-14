@@ -51,15 +51,15 @@ public class GitHubUpdateService : IUpdateService
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    resultado.Mensaje = "No se encontraron releases publicadas aún en GitHub. Debes crear la primera release.";
+                    resultado.Mensaje = "No se encontraron nuevas versiones disponibles en el servidor de distribución.";
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
-                    resultado.Mensaje = "Límite temporal de consultas a GitHub alcanzado (60/hora). Se restablece automáticamente en unos minutos.";
+                    resultado.Mensaje = "Límite de consultas simultáneas al servidor alcanzado temporalmente. Se restablece en unos minutos.";
                 }
                 else
                 {
-                    resultado.Mensaje = $"Respuesta de GitHub: {(int)response.StatusCode} {response.ReasonPhrase}";
+                    resultado.Mensaje = $"Respuesta del servidor de distribución: {(int)response.StatusCode} {response.ReasonPhrase}";
                 }
                 return resultado;
             }
@@ -120,7 +120,7 @@ public class GitHubUpdateService : IUpdateService
                 }
                 else
                 {
-                    resultado.Mensaje = $"Existe la versión {cleanTag}, pero aún no tiene adjunto el instalador .zip en GitHub.";
+                    resultado.Mensaje = $"Existe la versión {cleanTag}, pero aún no tiene adjunto el paquete de instalación en el servidor.";
                 }
             }
             else

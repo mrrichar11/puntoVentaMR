@@ -714,7 +714,7 @@ public partial class ConfiguracionViewModel : ObservableObject
         try
         {
             EstaBuscandoActualizacion = true;
-            EstadoVerificacionActualizacion = "Consultando GitHub Releases...";
+            EstadoVerificacionActualizacion = "Comprobando actualizaciones con el servidor...";
             var resultado = await _updateService.VerificarActualizacionesAsync(GitHubRepoOwner, GitHubRepoName);
 
             if (resultado.HayActualizacionDisponible)
