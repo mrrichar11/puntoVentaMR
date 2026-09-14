@@ -31,10 +31,11 @@ public partial class App : System.Windows.Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                // 1. Acceso a Datos SQLite con EF Core
+                // 1. Acceso a Datos SQLite con EF Core (Ruta Absoluta para garantizar que siempre lea la BD de la app sin importar el WorkingDirectory)
+                var dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "puntodeventa.db");
                 services.AddDbContext<AppDbContext>(options =>
                 {
-                    options.UseSqlite("Data Source=puntodeventa.db;");
+                    options.UseSqlite($"Data Source={dbPath};");
                 });
 
                 // 2. Repositorios y Unit of Work

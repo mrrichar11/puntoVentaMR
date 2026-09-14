@@ -233,9 +233,10 @@ if exist ""{appDir}\puntodeventa.db"" (
 echo Aplicando nuevos componentes...
 robocopy ""{extractedDir}"" ""{appDir}"" /E /R:3 /W:1 /XF *.db* gemini_key.txt *.log /XD Backups Tickets Logos >nul
 
-:: 4. Relanzar la aplicacion actualizada
+:: 4. Relanzar la aplicacion actualizada con su directorio de trabajo correcto
 echo Reiniciando Punto de Venta...
-start """" ""{appDir}\PuntoDeVenta.UI.exe""
+cd /d ""{appDir}""
+start """" /d ""{appDir}"" ""{appDir}\PuntoDeVenta.UI.exe""
 
 :: 5. Finalizar
 exit
